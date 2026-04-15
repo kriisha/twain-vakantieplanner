@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Twain Teamplanner</title>
+  <style>
+    :root{
+      --bg:#f7f4ef;
+      --paper:#ffffff;
+      --navy:#084493;
+      --navy-strong:#0e2240;
+      --ink:#243447;
+      --muted:#6b7280;
+      --line:#d8d3ca;
+      --line-soft:#ede9e1;
+      --soft-blue:rgba(8,68,147,.06);
+      --soft-green:#ebf8f1;
+      --soft-gold:#fff8ee;
+      --soft-red:#fff2ed;
+      --shadow:0 20px 50px rgba(8,68,147,.08);
+      --jens:#084493;
+      --stijn:#3c7c59;
+      --hermann:#a66f2c;
+      --vacation:#d86c3f;
+      --home:#3c7c59;
+      --selected:#d9e8fb;
+      --selected-line:#7aa4da;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family:"Allianz Neo","Century Gothic",Arial,sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(8,68,147,.08), transparent 32%),
+        linear-gradient(180deg, #fbfaf7 0%, var(--bg) 100%);
+      color:var(--ink);
+      min-height:100vh;
+    }
+
+    .shell{
+      max-width:1320px;
+      margin:0 auto;
+      padding:32px 20px 56px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg, var(--navy) 0%, #0a57b8 100%);
+      color:#fff;
+      border-radius:10px;
+      padding:34px 34px 30px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+      margin-bottom:24px;
+    }
+
+    .hero:before,
+    .hero:after{
+      content:"";
+      position:absolute;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      pointer-events:none;
+    }
+
+    .hero:before{width:240px;height:240px;top:-120px;right:-70px}
+    .hero:after{width:180px;height:180px;bottom:-90px;left:-50px}
+
+    .eyebrow{
+      position:relative;
+      z-index:1;
+      margin:0 0 10px;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.58);
+    }
+
+    .hero-grid{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:minmax(0,1.3fr) minmax(320px,.9fr);
+      gap:28px;
+      align-items:end;
+    }
+
+    .hero h1{
+      margin:0 0 14px;
+      font-size:40px;
+      line-height:1.12;
+      color:#fff;
+      font-family:"DM Serif Display", Georgia, serif;
+      font-weight:400;
+    }
+
+    .hero p{
+      margin:0;
+      max-width:700px;
+      color:rgba(255,255,255,.82);
+      font-size:15px;
+      line-height:1.8;
+    }
+
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .hero-stat{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:8px;
+      padding:16px 14px;
+      backdrop-filter:blur(6px);
+    }
+
+    .hero-stat-label{
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,.55);
+      margin-bottom:8px;
+    }
+
+    .hero-stat-value{
+      font-size:28px;
+      line-height:1;
+      font-weight:700;
+      color:#fff;
+    }
+
+    .hero-stat-sub{
+      margin-top:6px;
+      font-size:12px;
+      color:rgba(255,255,255,.72);
+      line-height:1.4;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:390px minmax(0,1fr);
+      gap:22px;
+      align-items:start;
+    }
+
+    .card{
+      background:var(--paper);
+      border:1px solid var(--line);
+      border-radius:10px;
+      box-shadow:0 8px 28px rgba(8,68,147,.05);
+    }
+
+    .card-head{
+      padding:22px 22px 0;
+    }
+
+    .card-title{
+      margin:0 0 6px;
+      font-size:23px;
+      line-height:1.25;
+      color:var(--navy-strong);
+      font-family:"DM Serif Display", Georgia, serif;
+      font-weight:400;
+    }
+
+    .card-sub{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+    }
+
+    .card-body{
+      padding:22px;
+    }
+
+    .planner-panel{
+      display:grid;
+      gap:16px;
+    }
+
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:13px;
+      background:var(--soft-blue);
+      color:var(--navy);
+      border:1px solid rgba(8,68,147,.12);
+    }
+
+    .status-dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:#3c7c59;
+      flex-shrink:0;
+    }
+
+    .status-dot.error{background:#d86c3f}
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    label{
+      display:block;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color:#667085;
+    }
+
+    input,select,textarea,button{
+      font:inherit;
+    }
+
+    textarea,select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:7px;
+      background:#fff;
+      color:var(--ink);
+      padding:14px 14px;
+      font-size:15px;
+      transition:border-color .15s ease, box-shadow .15s ease;
+      outline:none;
+    }
+
+    textarea:focus,select:focus{
+      border-color:rgba(8,68,147,.45);
+      box-shadow:0 0 0 4px rgba(8,68,147,.09);
+    }
+
+    textarea{
+      min-height:88px;
+      resize:vertical;
+      line-height:1.5;
+    }
+
+    .segmented{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .segment{
+      border:1.5px solid var(--line);
+      border-radius:8px;
+      padding:15px 14px;
+      background:#fff;
+      cursor:pointer;
+      transition:all .16s ease;
+      text-align:left;
+    }
+
+    .segment.active{
+      border-color:var(--navy);
+      background:var(--soft-blue);
+      box-shadow:inset 0 0 0 1px rgba(8,68,147,.08);
+    }
+
+    .segment[data-type="home"].active{
+      border-color:var(--home);
+      background:var(--soft-green);
+      box-shadow:inset 0 0 0 1px rgba(60,124,89,.08);
+    }
+
+    .segment-title{
+      font-size:15px;
+      font-weight:700;
+      color:var(--navy-strong);
+      margin-bottom:4px;
+    }
+
+    .segment-sub{
+      font-size:12px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+
+    .selection-box{
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:16px;
+      background:linear-gradient(180deg,#fff 0%, #fcfbf8 100%);
+    }
+
+    .selection-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    .selection-range{
+      font-size:20px;
+      line-height:1.3;
+      color:var(--navy-strong);
+      font-family:"DM Serif Display", Georgia, serif;
+      min-height:28px;
+    }
+
+    .selection-sub{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .helper-note{
+      background:var(--soft-blue);
+      border-left:2px solid var(--navy);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.65;
+      padding:14px 14px 14px 16px;
+      border-radius:0 6px 6px 0;
+    }
+
+    .button-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius:7px;
+      padding:14px 18px;
+      cursor:pointer;
+      text-decoration:none;
+      transition:transform .14s ease, box-shadow .14s ease, background .14s ease, opacity .14s ease;
+      font-size:14px;
+      font-weight:700;
+      letter-spacing:.02em;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{cursor:not-allowed;opacity:.55;transform:none}
+
+    .btn-primary{
+      background:var(--navy);
+      color:#fff;
+      box-shadow:0 12px 26px rgba(8,68,147,.18);
+    }
+
+    .btn-secondary{
+      background:#fff;
+      color:var(--navy);
+      border:1px solid var(--line);
+    }
+
+    .btn-danger{
+      background:#fff;
+      color:#b45309;
+      border:1px solid #efcfba;
+    }
+
+    .toolbar{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      align-items:flex-start;
+      padding:22px 22px 0;
+      flex-wrap:wrap;
+    }
+
+    .toolbar-left,.toolbar-right{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .month-title{
+      font-size:26px;
+      font-family:"DM Serif Display", Georgia, serif;
+      color:var(--navy-strong);
+      margin:0 8px;
+      min-width:210px;
+      text-align:center;
+    }
+
+    .icon-btn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--navy);
+      border-radius:999px;
+      width:40px;
+      height:40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-size:18px;
+    }
+
+    .filter-pills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      padding:10px 14px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+      cursor:pointer;
+      transition:all .15s ease;
+    }
+
+    .pill.active{
+      color:#fff;
+      background:var(--navy);
+      border-color:var(--navy);
+    }
+
+    .summary-strip{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      padding:0 22px 18px;
+      margin-top:18px;
+    }
+
+    .person-summary{
+      border:1px solid var(--line-soft);
+      border-radius:8px;
+      padding:16px 16px 14px;
+      background:linear-gradient(180deg,#fff 0%, #fcfbf8 100%);
+    }
+
+    .person-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+      gap:12px;
+    }
+
+    .person-name{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:15px;
+      font-weight:700;
+      color:var(--navy-strong);
+    }
+
+    .person-dot{
+      width:11px;
+      height:11px;
+      border-radius:50%;
+      flex-shrink:0;
+    }
+
+    .person-counts{
+      display:flex;
+      gap:10px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .count-chip{
+      background:var(--bg);
+      border-radius:999px;
+      padding:6px 10px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .count-chip strong{
+      color:var(--navy-strong);
+      font-size:13px;
+    }
+
+    .calendar-wrap{
+      padding:0 22px 22px;
+    }
+
+    .calendar-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:10px;
+    }
+
+    .weekday{
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color:#8a93a1;
+      padding:0 2px 8px;
+    }
+
+    .day{
+      min-height:140px;
+      border:1px solid var(--line-soft);
+      border-radius:10px;
+      background:#fff;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      cursor:pointer;
+      transition:border-color .14s ease, box-shadow .14s ease, transform .14s ease;
+    }
+
+    .day:hover{
+      border-color:rgba(8,68,147,.22);
+      transform:translateY(-1px);
+    }
+
+    .day.outside{
+      background:#faf8f4;
+    }
+
+    .day.today{
+      border-color:rgba(8,68,147,.3);
+      box-shadow:inset 0 0 0 1px rgba(8,68,147,.12);
+    }
+
+    .day.selected{
+      background:linear-gradient(180deg,#f7fbff 0%, #f0f6fd 100%);
+      border-color:var(--selected-line);
+      box-shadow:inset 0 0 0 1px rgba(122,164,218,.18);
+    }
+
+    .day-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    .day-number{
+      font-size:14px;
+      font-weight:700;
+      color:var(--navy-strong);
+    }
+
+    .outside .day-number{
+      color:#b6bcc6;
+    }
+
+    .day-select{
+      font-size:11px;
+      color:var(--muted);
+      opacity:.85;
+    }
+
+    .day-tags{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-height:0;
+    }
+
+    .entry-pill{
+      border-radius:8px;
+      padding:8px 9px;
+      font-size:12px;
+      line-height:1.35;
+      color:#0e2240;
+      border:1px solid transparent;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .entry-pill:before{
+      content:"";
+      position:absolute;
+      left:0;top:0;bottom:0;
+      width:4px;
+      background:currentColor;
+      opacity:.85;
+    }
+
+    .entry-name{
+      display:block;
+      font-weight:700;
+      margin-left:6px;
+      margin-bottom:2px;
+    }
+
+    .entry-type{
+      display:block;
+      margin-left:6px;
+      font-size:11px;
+      opacity:.78;
+    }
+
+    .vacation{
+      background:var(--soft-gold);
+      color:var(--vacation);
+      border-color:#f3d6bf;
+    }
+
+    .home{
+      background:var(--soft-green);
+      color:var(--home);
+      border-color:#cfe7d8;
+    }
+
+    .list-card{
+      margin-top:22px;
+    }
+
+    .list-grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:22px;
+      padding:0 22px 22px;
+    }
+
+    .agenda-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .agenda-item{
+      border:1px solid var(--line-soft);
+      border-radius:8px;
+      padding:15px 16px;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:14px;
+      align-items:center;
+      background:#fff;
+    }
+
+    .agenda-badge{
+      width:40px;
+      height:40px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:700;
+      color:#fff;
+    }
+
+    .agenda-main{
+      min-width:0;
+    }
+
+    .agenda-title{
+      margin:0 0 4px;
+      font-size:15px;
+      color:var(--navy-strong);
+      font-weight:700;
+    }
+
+    .agenda-meta{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .agenda-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .ghost-btn{
+      border:none;
+      background:transparent;
+      color:#b45309;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .empty{
+      border:1px dashed var(--line);
+      border-radius:8px;
+      padding:22px 18px;
+      background:#fcfbf8;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+      text-align:center;
+    }
+
+    .legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:16px;
+    }
+
+    .legend-item{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      color:var(--muted);
+      padding:8px 12px;
+      border:1px solid var(--line-soft);
+      border-radius:999px;
+      background:#fff;
+    }
+
+    .legend-swatch{
+      width:11px;
+      height:11px;
+      border-radius:50%;
+      flex-shrink:0;
+    }
+
+    .banner{
+      margin-bottom:18px;
+      padding:14px 16px;
+      border-radius:8px;
+      font-size:14px;
+      line-height:1.6;
+      display:none;
+    }
+
+    .banner.error{
+      display:block;
+      background:var(--soft-red);
+      border:1px solid #f1cdbd;
+      color:#9a4c2c;
+    }
+
+    @media (max-width: 1120px){
+      .layout{grid-template-columns:1fr}
+      .hero-grid{grid-template-columns:1fr}
+      .list-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width: 760px){
+      .shell{padding:18px 14px 36px}
+      .hero{padding:26px 20px 22px}
+      .hero h1{font-size:31px}
+      .hero-stats{grid-template-columns:1fr}
+      .summary-strip{grid-template-columns:1fr}
+      .calendar-grid{gap:7px}
+      .day{min-height:112px;padding:8px}
+      .toolbar{padding:18px 18px 0}
+      .calendar-wrap,.list-grid{padding:0 18px 18px}
+      .month-title{min-width:auto;width:100%;margin:0}
+      .segmented{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <p class="eyebrow">Team planning</p>
+      <div class="hero-grid">
+        <div>
+          <h1>Vakantie en thuiswerk, gedeeld in één levende teamkalender.</h1>
+          <p>
+            Deze versie is bedoeld voor gedeeld gebruik. Jens, Stijn en Hermann zien dezelfde planning,
+            kiezen gewoon een naam, klikken hun dagen aan in de kalender en duiden daarna aan of het om
+            vakantie of thuiswerk gaat.
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-label">Teamleden</div>
+            <div class="hero-stat-value">3</div>
+            <div class="hero-stat-sub">Jens, Stijn, Hermann</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">Deze maand</div>
+            <div class="hero-stat-value" id="hero-month-total">0</div>
+            <div class="hero-stat-sub">Geplande teamdagen</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-label">Volgende item</div>
+            <div class="hero-stat-value" id="hero-next-label">—</div>
+            <div class="hero-stat-sub" id="hero-next-sub">Nog niets gepland</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="error-banner" class="banner error"></div>
+
+    <div class="layout">
+      <aside class="card">
+        <div class="card-head">
+          <h2 class="card-title">Nieuwe registratie</h2>
+          <p class="card-sub">Klik eerst een start- en einddatum in de kalender, kies daarna de persoon en het type dag.</p>
+        </div>
+        <div class="card-body">
+          <div class="planner-panel">
+            <div class="status-chip">
+              <span class="status-dot" id="sync-dot"></span>
+              <span id="sync-label">Verbonden met gedeelde planning</span>
+            </div>
+
+            <div class="field">
+              <label for="person-select">Naam</label>
+              <select id="person-select">
+                <option value="Jens">Jens</option>
+                <option value="Stijn">Stijn</option>
+                <option value="Hermann">Hermann</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Type dag</label>
+              <div class="segmented">
+                <button type="button" class="segment active" data-type="vacation">
+                  <div class="segment-title">Vakantie</div>
+                  <div class="segment-sub">Voor verlof, afwezigheden of vakantieperiodes</div>
+                </button>
+                <button type="button" class="segment" data-type="home">
+                  <div class="segment-title">Thuiswerk</div>
+                  <div class="segment-sub">Voor één of meerdere geplande thuiswerkdagen</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="selection-box">
+              <div class="selection-label">Geselecteerde periode</div>
+              <div class="selection-range" id="selection-range">Klik een dag in de kalender</div>
+              <div class="selection-sub" id="selection-sub">Klik een tweede dag om meteen een volledige periode te kiezen.</div>
+            </div>
+
+            <div class="field">
+              <label for="note-input">Opmerking</label>
+              <textarea id="note-input" placeholder="Optioneel: bv. citytrip, vaste thuiswerkdag, schoolvakantie..."></textarea>
+            </div>
+
+            <div class="button-row">
+              <button class="btn btn-primary" type="button" id="save-btn">Toevoegen aan planning</button>
+              <button class="btn btn-secondary" type="button" id="clear-selection-btn">Selectie wissen</button>
+              <button class="btn btn-secondary" type="button" id="refresh-btn">Verversen</button>
+            </div>
+
+            <div class="helper-note">
+              Deze planning gebruikt een gedeelde backend. Iedereen op het team ziet dus dezelfde registraties.
+              De kalender ververst automatisch ook tussendoor.
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="card">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button class="icon-btn" id="prev-month-btn" type="button" aria-label="Vorige maand">‹</button>
+            <h2 class="month-title" id="month-title">—</h2>
+            <button class="icon-btn" id="next-month-btn" type="button" aria-label="Volgende maand">›</button>
+            <button class="pill" id="today-btn" type="button">Vandaag</button>
+          </div>
+          <div class="toolbar-right">
+            <div class="filter-pills" id="filter-pills"></div>
+          </div>
+        </div>
+
+        <div class="summary-strip" id="summary-strip"></div>
+
+        <div class="calendar-wrap">
+          <div class="legend">
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--vacation)"></span>Vakantie</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--home)"></span>Thuiswerk</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--selected-line)"></span>Geselecteerde periode</span>
+          </div>
+
+          <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+
+        <div class="list-card">
+          <div class="card-head" style="padding-top:0">
+            <h2 class="card-title">Overzicht</h2>
+            <p class="card-sub">Wat eraan komt en de meest recente registraties, met mogelijkheid om dingen weer weg te halen.</p>
+          </div>
+          <div class="list-grid">
+            <section>
+              <div class="legend" style="margin-bottom:14px">
+                <span class="legend-item">Komende dagen</span>
+              </div>
+              <div class="agenda-list" id="upcoming-list"></div>
+            </section>
+
+            <section>
+              <div class="legend" style="margin-bottom:14px">
+                <span class="legend-item">Recent toegevoegd</span>
+              </div>
+              <div class="agenda-list" id="recent-list"></div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var API_BASE = window.TWAIN_VAKANTIEPLANNER_API_BASE || '';
+      var API_URL = API_BASE + '/api/planner';
+      var PEOPLE = ['Jens', 'Stijn', 'Hermann'];
+      var PERSON_COLORS = {
+        Jens: getComputedStyle(document.documentElement).getPropertyValue('--jens').trim(),
+        Stijn: getComputedStyle(document.documentElement).getPropertyValue('--stijn').trim(),
+        Hermann: getComputedStyle(document.documentElement).getPropertyValue('--hermann').trim()
+      };
+      var TYPE_LABELS = {
+        vacation: 'Vakantie',
+        home: 'Thuiswerk'
+      };
+
+      var state = {
+        entries: [],
+        selectedType: 'vacation',
+        selectedPerson: 'Jens',
+        filterPerson: 'all',
+        currentMonth: startOfMonth(new Date()),
+        selectionStart: null,
+        selectionEnd: null,
+        loading: false,
+        saving: false,
+        error: '',
+        lastSyncedAt: null
+      };
+
+      var els = {
+        person: document.getElementById('person-select'),
+        note: document.getElementById('note-input'),
+        saveBtn: document.getElementById('save-btn'),
+        clearSelectionBtn: document.getElementById('clear-selection-btn'),
+        refreshBtn: document.getElementById('refresh-btn'),
+        prevMonth: document.getElementById('prev-month-btn'),
+        nextMonth: document.getElementById('next-month-btn'),
+        todayBtn: document.getElementById('today-btn'),
+        monthTitle: document.getElementById('month-title'),
+        calendarGrid: document.getElementById('calendar-grid'),
+        filterPills: document.getElementById('filter-pills'),
+        summaryStrip: document.getElementById('summary-strip'),
+        upcomingList: document.getElementById('upcoming-list'),
+        recentList: document.getElementById('recent-list'),
+        heroMonthTotal: document.getElementById('hero-month-total'),
+        heroNextLabel: document.getElementById('hero-next-label'),
+        heroNextSub: document.getElementById('hero-next-sub'),
+        selectionRange: document.getElementById('selection-range'),
+        selectionSub: document.getElementById('selection-sub'),
+        syncDot: document.getElementById('sync-dot'),
+        syncLabel: document.getElementById('sync-label'),
+        errorBanner: document.getElementById('error-banner')
+      };
+
+      document.querySelectorAll('.segment').forEach(function (button) {
+        button.addEventListener('click', function () {
+          state.selectedType = button.getAttribute('data-type');
+          document.querySelectorAll('.segment').forEach(function (other) {
+            other.classList.toggle('active', other === button);
+          });
+        });
+      });
+
+      els.person.addEventListener('change', function () {
+        state.selectedPerson = els.person.value;
+      });
+
+      els.saveBtn.addEventListener('click', createEntryFromSelection);
+      els.clearSelectionBtn.addEventListener('click', clearSelection);
+      els.refreshBtn.addEventListener('click', function () { loadEntries(true); });
+
+      els.prevMonth.addEventListener('click', function () {
+        state.currentMonth = addMonths(state.currentMonth, -1);
+        render();
+      });
+
+      els.nextMonth.addEventListener('click', function () {
+        state.currentMonth = addMonths(state.currentMonth, 1);
+        render();
+      });
+
+      els.todayBtn.addEventListener('click', function () {
+        state.currentMonth = startOfMonth(new Date());
+        render();
+      });
+
+      buildFilterPills();
+      render();
+      loadEntries(true);
+      window.setInterval(function () {
+        loadEntries(false);
+      }, 30000);
+
+      function render() {
+        renderBanner();
+        renderSyncStatus();
+        renderSelectionSummary();
+        renderHeaderStats();
+        renderMonthTitle();
+        renderSummaries();
+        renderCalendar();
+        renderUpcoming();
+        renderRecent();
+        updateButtons();
+      }
+
+      function renderBanner() {
+        if (!state.error) {
+          els.errorBanner.style.display = 'none';
+          els.errorBanner.textContent = '';
+          return;
+        }
+        els.errorBanner.style.display = 'block';
+        els.errorBanner.textContent = state.error;
+      }
+
+      function renderSyncStatus() {
+        var hasError = Boolean(state.error);
+        els.syncDot.classList.toggle('error', hasError);
+
+        if (hasError) {
+          els.syncLabel.textContent = 'Backend niet bereikbaar';
+          return;
+        }
+
+        if (state.loading) {
+          els.syncLabel.textContent = 'Planning synchroniseren...';
+          return;
+        }
+
+        if (!state.lastSyncedAt) {
+          els.syncLabel.textContent = 'Verbonden met gedeelde planning';
+          return;
+        }
+
+        els.syncLabel.textContent = 'Laatst ververst om ' + state.lastSyncedAt.toLocaleTimeString('nl-BE', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      function renderSelectionSummary() {
+        if (!state.selectionStart || !state.selectionEnd) {
+          els.selectionRange.textContent = 'Klik een dag in de kalender';
+          els.selectionSub.textContent = 'Klik een tweede dag om meteen een volledige periode te kiezen.';
+          return;
+        }
+
+        var days = diffInDays(state.selectionStart, state.selectionEnd) + 1;
+        els.selectionRange.textContent = formatDateRange(state.selectionStart, state.selectionEnd);
+        els.selectionSub.textContent = days + ' ' + (days === 1 ? 'dag geselecteerd' : 'dagen geselecteerd') + ' voor ' + state.selectedPerson + '.';
+      }
+
+      function renderHeaderStats() {
+        var monthEntries = entriesInMonth(state.currentMonth);
+        var dayCount = monthEntries.reduce(function (sum, entry) {
+          return sum + overlapDays(entry, state.currentMonth);
+        }, 0);
+        els.heroMonthTotal.textContent = String(dayCount);
+
+        var nextEntry = getUpcomingEntries()[0];
+        if (!nextEntry) {
+          els.heroNextLabel.textContent = '—';
+          els.heroNextSub.textContent = 'Nog niets gepland';
+          return;
+        }
+
+        els.heroNextLabel.textContent = nextEntry.person;
+        els.heroNextSub.textContent = TYPE_LABELS[nextEntry.type] + ' · ' + formatDateRange(nextEntry.start, nextEntry.end);
+      }
+
+      function renderMonthTitle() {
+        els.monthTitle.textContent = state.currentMonth.toLocaleDateString('nl-BE', {
+          month: 'long',
+          year: 'numeric'
+        });
+      }
+
+      function buildFilterPills() {
+        var options = ['all'].concat(PEOPLE);
+        els.filterPills.innerHTML = '';
+        options.forEach(function (value) {
+          var pill = document.createElement('button');
+          pill.type = 'button';
+          pill.className = 'pill' + (value === state.filterPerson ? ' active' : '');
+          pill.textContent = value === 'all' ? 'Iedereen' : value;
+          pill.addEventListener('click', function () {
+            state.filterPerson = value;
+            buildFilterPills();
+            render();
+          });
+          els.filterPills.appendChild(pill);
+        });
+      }
+
+      function renderSummaries() {
+        var monthEntries = entriesInMonth(state.currentMonth);
+        els.summaryStrip.innerHTML = '';
+
+        PEOPLE.forEach(function (person) {
+          var personal = monthEntries.filter(function (entry) {
+            return entry.person === person;
+          });
+
+          var vacationDays = personal
+            .filter(function (entry) { return entry.type === 'vacation'; })
+            .reduce(function (sum, entry) { return sum + overlapDays(entry, state.currentMonth); }, 0);
+
+          var homeDays = personal
+            .filter(function (entry) { return entry.type === 'home'; })
+            .reduce(function (sum, entry) { return sum + overlapDays(entry, state.currentMonth); }, 0);
+
+          var card = document.createElement('article');
+          card.className = 'person-summary';
+          card.innerHTML =
+            '<div class="person-top">' +
+              '<div class="person-name">' +
+                '<span class="person-dot" style="background:' + PERSON_COLORS[person] + '"></span>' +
+                person +
+              '</div>' +
+              '<div class="person-counts">' +
+                '<span class="count-chip"><strong>' + vacationDays + '</strong> vakantie</span>' +
+                '<span class="count-chip"><strong>' + homeDays + '</strong> thuis</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="card-sub" style="font-size:13px">' +
+              (personal.length
+                ? personal.slice(0, 2).map(function (entry) {
+                    return TYPE_LABELS[entry.type] + ' · ' + formatDateRange(entry.start, entry.end);
+                  }).join('<br>')
+                : 'Nog geen registraties in deze maand.'
+              ) +
+            '</div>';
+          els.summaryStrip.appendChild(card);
+        });
+      }
+
+      function renderCalendar() {
+        els.calendarGrid.innerHTML = '';
+        ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].forEach(function (label) {
+          var head = document.createElement('div');
+          head.className = 'weekday';
+          head.textContent = label;
+          els.calendarGrid.appendChild(head);
+        });
+
+        var first = startOfMonth(state.currentMonth);
+        var gridStart = startOfWeek(first);
+
+        for (var i = 0; i < 42; i += 1) {
+          var day = addDays(gridStart, i);
+          var iso = toIsoDate(day);
+          var isCurrentMonth = day.getMonth() === state.currentMonth.getMonth();
+          var items = entriesForDate(iso);
+          var selected = isDateInSelection(iso);
+          var card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'day' + (isCurrentMonth ? '' : ' outside') + (isToday(day) ? ' today' : '') + (selected ? ' selected' : '');
+          card.addEventListener('click', handleDatePick.bind(null, iso, day));
+
+          var tags = items.length
+            ? items.map(function (entry) {
+                return (
+                  '<div class="entry-pill ' + entry.type + '">' +
+                    '<span class="entry-name">' + entry.person + '</span>' +
+                    '<span class="entry-type">' + TYPE_LABELS[entry.type] + '</span>' +
+                  '</div>'
+                );
+              }).join('')
+            : '';
+
+          card.innerHTML =
+            '<div class="day-head">' +
+              '<span class="day-number">' + day.getDate() + '</span>' +
+              '<span class="day-select">' + (selected ? 'Gekozen' : 'Kies') + '</span>' +
+            '</div>' +
+            '<div class="day-tags">' + tags + '</div>';
+          els.calendarGrid.appendChild(card);
+        }
+      }
+
+      function renderUpcoming() {
+        renderAgendaList(els.upcomingList, getUpcomingEntries().slice(0, 8), 'Er zijn nog geen komende dagen ingepland.');
+      }
+
+      function renderRecent() {
+        var recent = state.entries
+          .slice()
+          .sort(function (a, b) {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          })
+          .slice(0, 8);
+
+        renderAgendaList(els.recentList, recent, 'Er zijn nog geen registraties toegevoegd.');
+      }
+
+      function renderAgendaList(container, entries, emptyMessage) {
+        if (!entries.length) {
+          container.innerHTML = '<div class="empty">' + emptyMessage + '</div>';
+          return;
+        }
+
+        container.innerHTML = '';
+        entries.forEach(function (entry) {
+          var item = document.createElement('article');
+          item.className = 'agenda-item';
+          item.innerHTML =
+            '<div class="agenda-badge" style="background:' + PERSON_COLORS[entry.person] + '">' + entry.person.slice(0, 2).toUpperCase() + '</div>' +
+            '<div class="agenda-main">' +
+              '<p class="agenda-title">' + entry.person + ' · ' + TYPE_LABELS[entry.type] + '</p>' +
+              '<p class="agenda-meta">' + formatDateRange(entry.start, entry.end) +
+              (entry.note ? '<br>' + escapeHtml(entry.note) : '') +
+              '</p>' +
+            '</div>' +
+            '<div class="agenda-actions">' +
+              '<button class="ghost-btn" type="button" data-remove="' + entry.id + '">Verwijderen</button>' +
+            '</div>';
+          container.appendChild(item);
+        });
+
+        container.querySelectorAll('[data-remove]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            deleteEntry(button.getAttribute('data-remove'));
+          });
+        });
+      }
+
+      function updateButtons() {
+        var hasSelection = Boolean(state.selectionStart && state.selectionEnd);
+        els.saveBtn.disabled = !hasSelection || state.saving || state.loading;
+        els.clearSelectionBtn.disabled = !hasSelection;
+        els.refreshBtn.disabled = state.loading;
+      }
+
+      function handleDatePick(iso, day) {
+        if (!state.selectionStart || (state.selectionStart && state.selectionEnd && state.selectionStart !== state.selectionEnd)) {
+          state.selectionStart = iso;
+          state.selectionEnd = iso;
+          render();
+          return;
+        }
+
+        if (state.selectionStart && state.selectionEnd && state.selectionStart === state.selectionEnd) {
+          if (iso < state.selectionStart) {
+            state.selectionEnd = state.selectionStart;
+            state.selectionStart = iso;
+          } else {
+            state.selectionEnd = iso;
+          }
+          state.currentMonth = startOfMonth(day);
+          render();
+        }
+      }
+
+      function clearSelection() {
+        state.selectionStart = null;
+        state.selectionEnd = null;
+        render();
+      }
+
+      async function createEntryFromSelection() {
+        if (!state.selectionStart || !state.selectionEnd) {
+          window.alert('Kies eerst een datum of periode in de kalender.');
+          return;
+        }
+
+        state.saving = true;
+        render();
+
+        try {
+          await fetchJson(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              person: state.selectedPerson,
+              type: state.selectedType,
+              start: state.selectionStart,
+              end: state.selectionEnd,
+              note: (els.note.value || '').trim()
+            })
+          });
+
+          els.note.value = '';
+          clearSelection();
+          await loadEntries(false);
+        } catch (error) {
+          state.error = 'Opslaan is niet gelukt. Controleer of de Vercel backend en Blob store correct geconfigureerd zijn.';
+          render();
+        } finally {
+          state.saving = false;
+          render();
+        }
+      }
+
+      async function deleteEntry(id) {
+        if (!id) return;
+        if (!window.confirm('Wilt u deze registratie verwijderen?')) return;
+
+        state.loading = true;
+        render();
+
+        try {
+          await fetchJson(API_URL, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id })
+          });
+          await loadEntries(false);
+        } catch (error) {
+          state.error = 'Verwijderen is niet gelukt. Probeer zo meteen opnieuw.';
+        } finally {
+          state.loading = false;
+          render();
+        }
+      }
+
+      async function loadEntries(showBannerOnError) {
+        state.loading = true;
+        render();
+
+        try {
+          var response = await fetchJson(API_URL, { method: 'GET' });
+          state.entries = Array.isArray(response.entries) ? response.entries : [];
+          state.lastSyncedAt = new Date();
+          state.error = '';
+        } catch (error) {
+          if (showBannerOnError) {
+            state.error = 'De gedeelde planner kan de backend niet bereiken. Deploy deze map op Vercel en koppel een private Blob store om hem team-breed te gebruiken.';
+          }
+        } finally {
+          state.loading = false;
+          render();
+        }
+      }
+
+      function entriesForDate(isoDate) {
+        return state.entries
+          .filter(function (entry) {
+            if (state.filterPerson !== 'all' && entry.person !== state.filterPerson) return false;
+            return isoDate >= entry.start && isoDate <= entry.end;
+          })
+          .sort(function (a, b) {
+            if (a.person !== b.person) return PEOPLE.indexOf(a.person) - PEOPLE.indexOf(b.person);
+            return a.type.localeCompare(b.type);
+          });
+      }
+
+      function entriesInMonth(monthDate) {
+        var monthStart = startOfMonth(monthDate);
+        var monthEnd = endOfMonth(monthDate);
+        return state.entries.filter(function (entry) {
+          if (state.filterPerson !== 'all' && entry.person !== state.filterPerson) return false;
+          return entry.end >= toIsoDate(monthStart) && entry.start <= toIsoDate(monthEnd);
+        });
+      }
+
+      function getUpcomingEntries() {
+        var todayIso = toIsoDate(new Date());
+        return state.entries
+          .filter(function (entry) {
+            if (state.filterPerson !== 'all' && entry.person !== state.filterPerson) return false;
+            return entry.end >= todayIso;
+          })
+          .slice()
+          .sort(function (a, b) {
+            if (a.start !== b.start) return a.start.localeCompare(b.start);
+            return PEOPLE.indexOf(a.person) - PEOPLE.indexOf(b.person);
+          });
+      }
+
+      function overlapDays(entry, monthDate) {
+        var monthStart = toIsoDate(startOfMonth(monthDate));
+        var monthEnd = toIsoDate(endOfMonth(monthDate));
+        var start = entry.start > monthStart ? entry.start : monthStart;
+        var end = entry.end < monthEnd ? entry.end : monthEnd;
+        if (end < start) return 0;
+        return diffInDays(start, end) + 1;
+      }
+
+      function isDateInSelection(iso) {
+        if (!state.selectionStart || !state.selectionEnd) return false;
+        return iso >= state.selectionStart && iso <= state.selectionEnd;
+      }
+
+      function startOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth(), 1);
+      }
+
+      function endOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      }
+
+      function addMonths(date, delta) {
+        return new Date(date.getFullYear(), date.getMonth() + delta, 1);
+      }
+
+      function addDays(date, delta) {
+        var copy = new Date(date);
+        copy.setDate(copy.getDate() + delta);
+        return copy;
+      }
+
+      function startOfWeek(date) {
+        var copy = new Date(date);
+        var day = copy.getDay();
+        var diff = day === 0 ? -6 : 1 - day;
+        copy.setDate(copy.getDate() + diff);
+        copy.setHours(0, 0, 0, 0);
+        return copy;
+      }
+
+      function toIsoDate(date) {
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+      }
+
+      function isToday(date) {
+        return toIsoDate(date) === toIsoDate(new Date());
+      }
+
+      function formatDateRange(startIso, endIso) {
+        var start = fromIso(startIso);
+        var end = fromIso(endIso);
+        var same = startIso === endIso;
+        var startLabel = start.toLocaleDateString('nl-BE', { day: 'numeric', month: 'long' });
+        var endLabel = end.toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' });
+        if (same) return start.toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        if (start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth()) {
+          return start.getDate() + '–' + end.getDate() + ' ' + end.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
+        }
+        return startLabel + ' – ' + endLabel;
+      }
+
+      function fromIso(iso) {
+        var parts = iso.split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+      }
+
+      function diffInDays(startIso, endIso) {
+        var start = fromIso(startIso);
+        var end = fromIso(endIso);
+        return Math.round((end - start) / 86400000);
+      }
+
+      async function fetchJson(url, options) {
+        var response = await fetch(url, options || {});
+        if (!response.ok) {
+          throw new Error('Request failed');
+        }
+        return response.json();
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+    })();
+  </script>
+</body>
+</html>
