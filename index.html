@@ -47,26 +47,44 @@
     }
 
     .hero{
-      background:#fff;
-      border:1px solid var(--line);
+      background:linear-gradient(135deg, var(--navy) 0%, #0a57b8 100%);
+      color:#fff;
       border-radius:10px;
-      padding:22px 24px;
-      box-shadow:0 8px 28px rgba(8,68,147,.05);
+      padding:26px 28px 24px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
       margin-bottom:18px;
     }
 
+    .hero:before,
+    .hero:after{
+      content:"";
+      position:absolute;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      pointer-events:none;
+    }
+
+    .hero:before{width:220px;height:220px;top:-120px;right:-70px}
+    .hero:after{width:160px;height:160px;bottom:-90px;left:-50px}
+
     .hero h1{
-      margin:0 0 6px;
-      font-size:34px;
+      position:relative;
+      z-index:1;
+      margin:0 0 8px;
+      font-size:36px;
       line-height:1.1;
-      color:var(--navy-strong);
+      color:#fff;
       font-family:"DM Serif Display", Georgia, serif;
       font-weight:400;
     }
 
     .hero p{
+      position:relative;
+      z-index:1;
       margin:0;
-      color:var(--muted);
+      color:rgba(255,255,255,.82);
       font-size:14px;
       line-height:1.7;
     }
@@ -677,8 +695,8 @@
 
     @media (max-width: 760px){
       .shell{padding:18px 14px 36px}
-      .hero{padding:18px}
-      .hero h1{font-size:28px}
+      .hero{padding:22px 20px 20px}
+      .hero h1{font-size:30px}
       .summary-strip{grid-template-columns:1fr}
       .calendar-grid{gap:7px}
       .day{min-height:112px;padding:8px}
@@ -693,7 +711,7 @@
   <div class="shell">
     <section class="hero">
       <h1>Vakantieplanning</h1>
-      <p>Interne teamplanning voor Jens, Stijn en Hermann.</p>
+      <p>Jens, Stijn en Hermann.</p>
     </section>
 
     <div id="error-banner" class="banner error"></div>
