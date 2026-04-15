@@ -1,4 +1,4 @@
-import { BlobPreconditionFailedError, get, put } from '@vercel/blob';
+import { get, put } from '@vercel/blob';
 
 const DATA_PATH = 'twain-vakantieplanner/entries.json';
 const PEOPLE = ['Jens', 'Stijn', 'Hermann'];
@@ -149,7 +149,7 @@ async function readPlanner() {
   });
 
   if (!result) {
-    return { entries: [], etag: null };
+    return { entries: [] };
   }
 
   const raw = await new Response(result.stream).text();
@@ -162,43 +162,23 @@ async function readPlanner() {
   }
 
   return {
-    entries: Array.isArray(parsed) ? parsed.filter(isValidStoredEntry) : [],
-    etag: result.blob && result.blob.etag ? result.blob.etag : null
+    entries: Array.isArray(parsed) ? parsed.filter(isValidStoredEntry) : []
   };
 }
 
 async function updatePlanner(mutator) {
-  let lastConflict = null;
+  const snapshot = await readPlanner();
+  const nextEntries = sortEntries(mutator(snapshot.entries.slice())).filter(isValidStoredEntry);
 
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    const snapshot = await readPlanner();
-    const nextEntries = sortEntries(mutator(snapshot.entries.slice())).filter(isValidStoredEntry);
+  await put(DATA_PATH, JSON.stringify(nextEntries, null, 2), {
+    access: 'private',
+    allowOverwrite: true,
+    addRandomSuffix: false,
+    cacheControlMaxAge: 0,
+    contentType: 'application/json'
+  });
 
-    try {
-      await put(DATA_PATH, JSON.stringify(nextEntries, null, 2), {
-        access: 'private',
-        allowOverwrite: true,
-        addRandomSuffix: false,
-        cacheControlMaxAge: 0,
-        contentType: 'application/json',
-        ifMatch: snapshot.etag || undefined
-      });
-      return nextEntries;
-    } catch (error) {
-      if (error instanceof BlobPreconditionFailedError) {
-        lastConflict = error;
-        await wait(80 * (attempt + 1));
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  if (lastConflict) {
-    throw new Error('De planning werd net tegelijk aangepast. Probeer meteen opnieuw.');
-  }
-
-  throw new Error('Could not save planner due to concurrent updates');
+  return nextEntries;
 }
 
 function isValidStoredEntry(entry) {
@@ -238,10 +218,4 @@ function isMissingBlob(error) {
     typeof error.message === 'string' &&
     (error.message.includes('not found') || error.message.includes('404'))
   );
-}
-
-function wait(ms) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms);
-  });
 }
