@@ -28,20 +28,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       const body = parseBody(req);
-      const entry = validateEntry(body);
-
-      const entries = await updatePlanner(function (currentEntries) {
-        currentEntries.push({
-          id: createId(),
-          person: entry.person,
-          type: entry.type,
-          start: entry.start,
-          end: entry.end,
-          note: entry.note,
-          createdAt: new Date().toISOString()
-        });
-        return sortEntries(currentEntries);
-      });
+      const entries = await handlePost(body);
 
       return res.status(200).json({ ok: true, entries: entries });
     }
@@ -83,6 +70,53 @@ function parseBody(req) {
     return JSON.parse(req.body || '{}');
   }
   return req.body;
+}
+
+async function handlePost(body) {
+  if (body && body.action === 'delete') {
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    if (!id) {
+      throw new Error('Missing id');
+    }
+
+    return updatePlanner(function (currentEntries) {
+      return currentEntries.filter(function (entry) {
+        return entry.id !== id;
+      });
+    });
+  }
+
+  const incomingEntries = Array.isArray(body && body.entries)
+    ? body.entries
+    : [body];
+
+  const validatedEntries = incomingEntries.map(validateEntry);
+
+  return updatePlanner(function (currentEntries) {
+    const nextEntries = currentEntries.slice();
+    validatedEntries.forEach(function (entry) {
+      const duplicate = nextEntries.some(function (currentEntry) {
+        return currentEntry.person === entry.person &&
+          currentEntry.type === entry.type &&
+          currentEntry.start === entry.start &&
+          currentEntry.end === entry.end &&
+          (currentEntry.note || '') === (entry.note || '');
+      });
+
+      if (!duplicate) {
+        nextEntries.push({
+          id: createId(),
+          person: entry.person,
+          type: entry.type,
+          start: entry.start,
+          end: entry.end,
+          note: entry.note,
+          createdAt: new Date().toISOString()
+        });
+      }
+    });
+    return sortEntries(nextEntries);
+  });
 }
 
 function validateEntry(payload) {

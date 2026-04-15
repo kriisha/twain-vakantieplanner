@@ -317,7 +317,7 @@
       display:flex;
       justify-content:space-between;
       gap:18px;
-      align-items:flex-start;
+      align-items:center;
       padding:22px 22px 0;
       flex-wrap:wrap;
     }
@@ -624,6 +624,7 @@
       display:flex;
       align-items:center;
       gap:8px;
+      justify-content:flex-end;
     }
 
     .ghost-btn{
@@ -693,17 +694,52 @@
       .list-grid{grid-template-columns:1fr}
     }
 
+    @media (max-width: 920px){
+      .toolbar{
+        align-items:flex-start;
+      }
+
+      .toolbar-left{
+        width:100%;
+        justify-content:space-between;
+      }
+
+      .toolbar-right{
+        width:100%;
+      }
+
+      .filter-pills{
+        width:100%;
+        flex-wrap:nowrap;
+        overflow:auto;
+        padding-bottom:4px;
+      }
+
+      .summary-strip{
+        grid-template-columns:1fr;
+      }
+    }
+
     @media (max-width: 760px){
       .shell{padding:18px 14px 36px}
       .hero{padding:22px 20px 20px}
       .hero h1{font-size:30px}
-      .summary-strip{grid-template-columns:1fr}
       .calendar-grid{gap:7px}
-      .day{min-height:112px;padding:8px}
-      .toolbar{padding:18px 18px 0}
+      .day{min-height:96px;padding:7px}
+      .toolbar{padding:18px 18px 0;gap:14px}
       .calendar-wrap,.list-grid{padding:0 18px 18px}
       .month-title{min-width:auto;width:100%;margin:0}
       .segmented{grid-template-columns:1fr}
+      .button-row{flex-direction:column}
+      .btn{width:100%}
+      .person-top,
+      .agenda-item{grid-template-columns:1fr;align-items:flex-start}
+      .person-counts{width:100%;flex-wrap:wrap}
+      .agenda-actions{width:100%;justify-content:flex-start}
+      .entry-pill{padding:6px 8px}
+      .entry-name{font-size:11px}
+      .entry-type{font-size:10px}
+      .day-select{display:none}
     }
   </style>
 </head>
@@ -1169,26 +1205,32 @@
         render();
 
         try {
-          for (var i = 0; i < state.selectedDates.length; i += 1) {
-            var iso = state.selectedDates[i];
-            await fetchJson(API_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                person: state.selectedPerson,
-                type: state.selectedType,
-                start: iso,
-                end: iso,
-                note: (els.note.value || '').trim()
-              })
-            });
-          }
+          var note = (els.note.value || '').trim();
+          var entries = state.selectedDates.map(function (iso) {
+            return {
+              person: state.selectedPerson,
+              type: state.selectedType,
+              start: iso,
+              end: iso,
+              note: note
+            };
+          });
+
+          await fetchJson(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              entries: entries
+            })
+          });
 
           els.note.value = '';
           clearSelection();
           await loadEntries(false);
         } catch (error) {
-          state.error = 'Opslaan is niet gelukt. Controleer of de Vercel backend en Blob store correct geconfigureerd zijn.';
+          state.error = error && error.message
+            ? 'Opslaan is niet gelukt: ' + error.message
+            : 'Opslaan is niet gelukt. Controleer of de Vercel backend en Blob store correct geconfigureerd zijn.';
           render();
         } finally {
           state.saving = false;
@@ -1205,13 +1247,18 @@
 
         try {
           await fetchJson(API_URL, {
-            method: 'DELETE',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id })
+            body: JSON.stringify({
+              action: 'delete',
+              id: id
+            })
           });
           await loadEntries(false);
         } catch (error) {
-          state.error = 'Verwijderen is niet gelukt. Probeer zo meteen opnieuw.';
+          state.error = error && error.message
+            ? 'Verwijderen is niet gelukt: ' + error.message
+            : 'Verwijderen is niet gelukt. Probeer zo meteen opnieuw.';
         } finally {
           state.loading = false;
           render();
@@ -1229,7 +1276,9 @@
           state.error = '';
         } catch (error) {
           if (showBannerOnError) {
-            state.error = 'De gedeelde planner kan de backend niet bereiken. Deploy deze map op Vercel en koppel een private Blob store om hem team-breed te gebruiken.';
+            state.error = error && error.message
+              ? 'De gedeelde planner kan de backend niet bereiken: ' + error.message
+              : 'De gedeelde planner kan de backend niet bereiken. Deploy deze map op Vercel en koppel een private Blob store om hem team-breed te gebruiken.';
           }
         } finally {
           state.loading = false;
@@ -1367,10 +1416,21 @@
 
       async function fetchJson(url, options) {
         var response = await fetch(url, options || {});
-        if (!response.ok) {
-          throw new Error('Request failed');
+        var text = await response.text();
+        var data = {};
+
+        if (text) {
+          try {
+            data = JSON.parse(text);
+          } catch (error) {
+            data = { error: text };
+          }
         }
-        return response.json();
+
+        if (!response.ok) {
+          throw new Error(data && data.error ? data.error : 'Request failed');
+        }
+        return data;
       }
 
       function escapeHtml(text) {
