@@ -1216,7 +1216,7 @@
             };
           });
 
-          await fetchJson(API_URL, {
+          var saveResponse = await fetchJson(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1224,9 +1224,11 @@
             })
           });
 
+          state.entries = Array.isArray(saveResponse.entries) ? saveResponse.entries : state.entries;
+          state.lastSyncedAt = new Date();
+          state.error = '';
           els.note.value = '';
           clearSelection();
-          await loadEntries(false);
         } catch (error) {
           state.error = error && error.message
             ? 'Opslaan is niet gelukt: ' + error.message
@@ -1246,7 +1248,7 @@
         render();
 
         try {
-          await fetchJson(API_URL, {
+          var deleteResponse = await fetchJson(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1254,7 +1256,9 @@
               id: id
             })
           });
-          await loadEntries(false);
+          state.entries = Array.isArray(deleteResponse.entries) ? deleteResponse.entries : state.entries;
+          state.lastSyncedAt = new Date();
+          state.error = '';
         } catch (error) {
           state.error = error && error.message
             ? 'Verwijderen is niet gelukt: ' + error.message
