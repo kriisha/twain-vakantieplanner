@@ -47,99 +47,28 @@
     }
 
     .hero{
-      background:linear-gradient(135deg, var(--navy) 0%, #0a57b8 100%);
-      color:#fff;
+      background:#fff;
+      border:1px solid var(--line);
       border-radius:10px;
-      padding:34px 34px 30px;
-      box-shadow:var(--shadow);
-      position:relative;
-      overflow:hidden;
-      margin-bottom:24px;
-    }
-
-    .hero:before,
-    .hero:after{
-      content:"";
-      position:absolute;
-      border-radius:999px;
-      background:rgba(255,255,255,.08);
-      pointer-events:none;
-    }
-
-    .hero:before{width:240px;height:240px;top:-120px;right:-70px}
-    .hero:after{width:180px;height:180px;bottom:-90px;left:-50px}
-
-    .eyebrow{
-      position:relative;
-      z-index:1;
-      margin:0 0 10px;
-      font-size:11px;
-      font-weight:700;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.58);
-    }
-
-    .hero-grid{
-      position:relative;
-      z-index:1;
-      display:grid;
-      grid-template-columns:minmax(0,1.3fr) minmax(320px,.9fr);
-      gap:28px;
-      align-items:end;
+      padding:22px 24px;
+      box-shadow:0 8px 28px rgba(8,68,147,.05);
+      margin-bottom:18px;
     }
 
     .hero h1{
-      margin:0 0 14px;
-      font-size:40px;
-      line-height:1.12;
-      color:#fff;
+      margin:0 0 6px;
+      font-size:34px;
+      line-height:1.1;
+      color:var(--navy-strong);
       font-family:"DM Serif Display", Georgia, serif;
       font-weight:400;
     }
 
     .hero p{
       margin:0;
-      max-width:700px;
-      color:rgba(255,255,255,.82);
-      font-size:15px;
-      line-height:1.8;
-    }
-
-    .hero-stats{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:12px;
-    }
-
-    .hero-stat{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:8px;
-      padding:16px 14px;
-      backdrop-filter:blur(6px);
-    }
-
-    .hero-stat-label{
-      font-size:11px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:rgba(255,255,255,.55);
-      margin-bottom:8px;
-    }
-
-    .hero-stat-value{
-      font-size:28px;
-      line-height:1;
-      font-weight:700;
-      color:#fff;
-    }
-
-    .hero-stat-sub{
-      margin-top:6px;
-      font-size:12px;
-      color:rgba(255,255,255,.72);
-      line-height:1.4;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
     }
 
     .layout{
@@ -303,11 +232,11 @@
     }
 
     .selection-range{
-      font-size:20px;
+      font-size:18px;
       line-height:1.3;
       color:var(--navy-strong);
       font-family:"DM Serif Display", Georgia, serif;
-      min-height:28px;
+      min-height:24px;
     }
 
     .selection-sub{
@@ -743,15 +672,13 @@
 
     @media (max-width: 1120px){
       .layout{grid-template-columns:1fr}
-      .hero-grid{grid-template-columns:1fr}
       .list-grid{grid-template-columns:1fr}
     }
 
     @media (max-width: 760px){
       .shell{padding:18px 14px 36px}
-      .hero{padding:26px 20px 22px}
-      .hero h1{font-size:31px}
-      .hero-stats{grid-template-columns:1fr}
+      .hero{padding:18px}
+      .hero h1{font-size:28px}
       .summary-strip{grid-template-columns:1fr}
       .calendar-grid{gap:7px}
       .day{min-height:112px;padding:8px}
@@ -765,34 +692,8 @@
 <body>
   <div class="shell">
     <section class="hero">
-      <p class="eyebrow">Team planning</p>
-      <div class="hero-grid">
-        <div>
-          <h1>Vakantie en thuiswerk, gedeeld in één levende teamkalender.</h1>
-          <p>
-            Deze versie is bedoeld voor gedeeld gebruik. Jens, Stijn en Hermann zien dezelfde planning,
-            kiezen gewoon een naam, klikken hun dagen aan in de kalender en duiden daarna aan of het om
-            vakantie of thuiswerk gaat.
-          </p>
-        </div>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <div class="hero-stat-label">Teamleden</div>
-            <div class="hero-stat-value">3</div>
-            <div class="hero-stat-sub">Jens, Stijn, Hermann</div>
-          </div>
-          <div class="hero-stat">
-            <div class="hero-stat-label">Deze maand</div>
-            <div class="hero-stat-value" id="hero-month-total">0</div>
-            <div class="hero-stat-sub">Geplande teamdagen</div>
-          </div>
-          <div class="hero-stat">
-            <div class="hero-stat-label">Volgende item</div>
-            <div class="hero-stat-value" id="hero-next-label">—</div>
-            <div class="hero-stat-sub" id="hero-next-sub">Nog niets gepland</div>
-          </div>
-        </div>
-      </div>
+      <h1>Vakantieplanning</h1>
+      <p>Interne teamplanning voor Jens, Stijn en Hermann.</p>
     </section>
 
     <div id="error-banner" class="banner error"></div>
@@ -801,7 +702,7 @@
       <aside class="card">
         <div class="card-head">
           <h2 class="card-title">Nieuwe registratie</h2>
-          <p class="card-sub">Klik eerst een start- en einddatum in de kalender, kies daarna de persoon en het type dag.</p>
+          <p class="card-sub">Kies een naam, duid losse dagen aan in de kalender en sla daarna vakantie of thuiswerk op.</p>
         </div>
         <div class="card-body">
           <div class="planner-panel">
@@ -834,9 +735,9 @@
             </div>
 
             <div class="selection-box">
-              <div class="selection-label">Geselecteerde periode</div>
-              <div class="selection-range" id="selection-range">Klik een dag in de kalender</div>
-              <div class="selection-sub" id="selection-sub">Klik een tweede dag om meteen een volledige periode te kiezen.</div>
+              <div class="selection-label">Geselecteerde dagen</div>
+              <div class="selection-range" id="selection-range">Klik dagen in de kalender</div>
+              <div class="selection-sub" id="selection-sub">Elke klik zet een dag aan of uit.</div>
             </div>
 
             <div class="field">
@@ -877,7 +778,7 @@
           <div class="legend">
             <span class="legend-item"><span class="legend-swatch" style="background:var(--vacation)"></span>Vakantie</span>
             <span class="legend-item"><span class="legend-swatch" style="background:var(--home)"></span>Thuiswerk</span>
-            <span class="legend-item"><span class="legend-swatch" style="background:var(--selected-line)"></span>Geselecteerde periode</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--selected-line)"></span>Geselecteerde dagen</span>
           </div>
 
           <div class="calendar-grid" id="calendar-grid"></div>
@@ -929,8 +830,7 @@
         selectedPerson: 'Jens',
         filterPerson: 'all',
         currentMonth: startOfMonth(new Date()),
-        selectionStart: null,
-        selectionEnd: null,
+        selectedDates: [],
         loading: false,
         saving: false,
         error: '',
@@ -952,9 +852,6 @@
         summaryStrip: document.getElementById('summary-strip'),
         upcomingList: document.getElementById('upcoming-list'),
         recentList: document.getElementById('recent-list'),
-        heroMonthTotal: document.getElementById('hero-month-total'),
-        heroNextLabel: document.getElementById('hero-next-label'),
-        heroNextSub: document.getElementById('hero-next-sub'),
         selectionRange: document.getElementById('selection-range'),
         selectionSub: document.getElementById('selection-sub'),
         syncDot: document.getElementById('sync-dot'),
@@ -1005,7 +902,6 @@
         renderBanner();
         renderSyncStatus();
         renderSelectionSummary();
-        renderHeaderStats();
         renderMonthTitle();
         renderSummaries();
         renderCalendar();
@@ -1050,33 +946,17 @@
       }
 
       function renderSelectionSummary() {
-        if (!state.selectionStart || !state.selectionEnd) {
-          els.selectionRange.textContent = 'Klik een dag in de kalender';
-          els.selectionSub.textContent = 'Klik een tweede dag om meteen een volledige periode te kiezen.';
+        if (!state.selectedDates.length) {
+          els.selectionRange.textContent = 'Klik dagen in de kalender';
+          els.selectionSub.textContent = 'Elke klik zet een dag aan of uit.';
           return;
         }
 
-        var days = diffInDays(state.selectionStart, state.selectionEnd) + 1;
-        els.selectionRange.textContent = formatDateRange(state.selectionStart, state.selectionEnd);
-        els.selectionSub.textContent = days + ' ' + (days === 1 ? 'dag geselecteerd' : 'dagen geselecteerd') + ' voor ' + state.selectedPerson + '.';
-      }
-
-      function renderHeaderStats() {
-        var monthEntries = entriesInMonth(state.currentMonth);
-        var dayCount = monthEntries.reduce(function (sum, entry) {
-          return sum + overlapDays(entry, state.currentMonth);
-        }, 0);
-        els.heroMonthTotal.textContent = String(dayCount);
-
-        var nextEntry = getUpcomingEntries()[0];
-        if (!nextEntry) {
-          els.heroNextLabel.textContent = '—';
-          els.heroNextSub.textContent = 'Nog niets gepland';
-          return;
-        }
-
-        els.heroNextLabel.textContent = nextEntry.person;
-        els.heroNextSub.textContent = TYPE_LABELS[nextEntry.type] + ' · ' + formatDateRange(nextEntry.start, nextEntry.end);
+        var sorted = state.selectedDates.slice().sort();
+        els.selectionRange.textContent = sorted.length === 1
+          ? formatSingleDate(sorted[0])
+          : sorted.length + ' dagen geselecteerd';
+        els.selectionSub.textContent = sorted.join(', ');
       }
 
       function renderMonthTitle() {
@@ -1155,9 +1035,12 @@
         });
 
         var first = startOfMonth(state.currentMonth);
+        var last = endOfMonth(state.currentMonth);
         var gridStart = startOfWeek(first);
+        var gridEnd = endOfWeek(last);
+        var totalDays = diffInDays(toIsoDate(gridStart), toIsoDate(gridEnd)) + 1;
 
-        for (var i = 0; i < 42; i += 1) {
+        for (var i = 0; i < totalDays; i += 1) {
           var day = addDays(gridStart, i);
           var iso = toIsoDate(day);
           var isCurrentMonth = day.getMonth() === state.currentMonth.getMonth();
@@ -1166,7 +1049,7 @@
           var card = document.createElement('button');
           card.type = 'button';
           card.className = 'day' + (isCurrentMonth ? '' : ' outside') + (isToday(day) ? ' today' : '') + (selected ? ' selected' : '');
-          card.addEventListener('click', handleDatePick.bind(null, iso, day));
+          card.addEventListener('click', handleDatePick.bind(null, iso));
 
           var tags = items.length
             ? items.map(function (entry) {
@@ -1236,41 +1119,31 @@
       }
 
       function updateButtons() {
-        var hasSelection = Boolean(state.selectionStart && state.selectionEnd);
+        var hasSelection = state.selectedDates.length > 0;
         els.saveBtn.disabled = !hasSelection || state.saving || state.loading;
         els.clearSelectionBtn.disabled = !hasSelection;
         els.refreshBtn.disabled = state.loading;
       }
 
-      function handleDatePick(iso, day) {
-        if (!state.selectionStart || (state.selectionStart && state.selectionEnd && state.selectionStart !== state.selectionEnd)) {
-          state.selectionStart = iso;
-          state.selectionEnd = iso;
-          render();
-          return;
+      function handleDatePick(iso) {
+        var index = state.selectedDates.indexOf(iso);
+        if (index > -1) {
+          state.selectedDates.splice(index, 1);
+        } else {
+          state.selectedDates.push(iso);
         }
-
-        if (state.selectionStart && state.selectionEnd && state.selectionStart === state.selectionEnd) {
-          if (iso < state.selectionStart) {
-            state.selectionEnd = state.selectionStart;
-            state.selectionStart = iso;
-          } else {
-            state.selectionEnd = iso;
-          }
-          state.currentMonth = startOfMonth(day);
-          render();
-        }
+        state.selectedDates.sort();
+        render();
       }
 
       function clearSelection() {
-        state.selectionStart = null;
-        state.selectionEnd = null;
+        state.selectedDates = [];
         render();
       }
 
       async function createEntryFromSelection() {
-        if (!state.selectionStart || !state.selectionEnd) {
-          window.alert('Kies eerst een datum of periode in de kalender.');
+        if (!state.selectedDates.length) {
+          window.alert('Kies eerst één of meerdere dagen in de kalender.');
           return;
         }
 
@@ -1278,17 +1151,20 @@
         render();
 
         try {
-          await fetchJson(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              person: state.selectedPerson,
-              type: state.selectedType,
-              start: state.selectionStart,
-              end: state.selectionEnd,
-              note: (els.note.value || '').trim()
-            })
-          });
+          for (var i = 0; i < state.selectedDates.length; i += 1) {
+            var iso = state.selectedDates[i];
+            await fetchJson(API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                person: state.selectedPerson,
+                type: state.selectedType,
+                start: iso,
+                end: iso,
+                note: (els.note.value || '').trim()
+              })
+            });
+          }
 
           els.note.value = '';
           clearSelection();
@@ -1388,8 +1264,7 @@
       }
 
       function isDateInSelection(iso) {
-        if (!state.selectionStart || !state.selectionEnd) return false;
-        return iso >= state.selectionStart && iso <= state.selectionEnd;
+        return state.selectedDates.indexOf(iso) > -1;
       }
 
       function startOfMonth(date) {
@@ -1419,6 +1294,15 @@
         return copy;
       }
 
+      function endOfWeek(date) {
+        var copy = new Date(date);
+        var day = copy.getDay();
+        var diff = day === 0 ? 0 : 7 - day;
+        copy.setDate(copy.getDate() + diff);
+        copy.setHours(0, 0, 0, 0);
+        return copy;
+      }
+
       function toIsoDate(date) {
         var year = date.getFullYear();
         var month = String(date.getMonth() + 1).padStart(2, '0');
@@ -1441,6 +1325,15 @@
           return start.getDate() + '–' + end.getDate() + ' ' + end.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
         }
         return startLabel + ' – ' + endLabel;
+      }
+
+      function formatSingleDate(iso) {
+        return fromIso(iso).toLocaleDateString('nl-BE', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
       }
 
       function fromIso(iso) {
