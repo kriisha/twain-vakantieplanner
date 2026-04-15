@@ -170,7 +170,7 @@ async function readPlanner() {
 async function updatePlanner(mutator) {
   let lastConflict = null;
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
     const snapshot = await readPlanner();
     const nextEntries = sortEntries(mutator(snapshot.entries.slice())).filter(isValidStoredEntry);
 
@@ -187,13 +187,18 @@ async function updatePlanner(mutator) {
     } catch (error) {
       if (error instanceof BlobPreconditionFailedError) {
         lastConflict = error;
+        await wait(80 * (attempt + 1));
         continue;
       }
       throw error;
     }
   }
 
-  throw lastConflict || new Error('Could not save planner due to concurrent updates');
+  if (lastConflict) {
+    throw new Error('De planning werd net tegelijk aangepast. Probeer meteen opnieuw.');
+  }
+
+  throw new Error('Could not save planner due to concurrent updates');
 }
 
 function isValidStoredEntry(entry) {
@@ -233,4 +238,10 @@ function isMissingBlob(error) {
     typeof error.message === 'string' &&
     (error.message.includes('not found') || error.message.includes('404'))
   );
+}
+
+function wait(ms) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, ms);
+  });
 }
