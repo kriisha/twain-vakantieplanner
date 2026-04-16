@@ -41,7 +41,6 @@
             identityModal: document.getElementById("identity-modal"),
             identityModalPills: document.getElementById("identity-modal-pills"),
             filterPills: document.getElementById("filter-pills"),
-            summaryStrip: document.getElementById("summary-strip"),
             selectionRange: document.getElementById("selection-range"),
             selectionSub: document.getElementById("selection-sub"),
             syncDot: document.getElementById("sync-dot"),
@@ -108,66 +107,6 @@
             month: "long",
             year: "numeric"
         });
-
-        !function() {
-            var e = v(a.currentMonth);
-            i.summaryStrip.innerHTML = "";
-            t.forEach(function(t) {
-                var o = e.filter(function(e) {
-                        return e.person === t;
-                    }),
-                    s = o.filter(function(e) {
-                        return "vacation" === e.type;
-                    }).reduce(function(e, t) {
-                        return e + f(t, a.currentMonth);
-                    }, 0),
-                    l = o.filter(function(e) {
-                        return "home" === e.type;
-                    }).reduce(function(e, t) {
-                        return e + f(t, a.currentMonth);
-                    }, 0),
-                    c = document.createElement("article");
-
-                c.className = "person-summary";
-
-                var d = o.length ? o.map(function(e) {
-                    var t = e.person === a.currentUser;
-                    return '<div class="month-entry"><div class="month-entry-meta"><div class="month-entry-title">' + r[e.type] + "</div>" + function(e, t) {
-                        var n = D(e),
-                            r = D(t),
-                            a = e === t,
-                            i = n.toLocaleDateString("nl-BE", {
-                                day: "numeric",
-                                month: "long"
-                            }),
-                            o = r.toLocaleDateString("nl-BE", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric"
-                            });
-                        if (a) return n.toLocaleDateString("nl-BE", {
-                            weekday: "long",
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric"
-                        });
-                        if (n.getFullYear() === r.getFullYear() && n.getMonth() === r.getMonth()) return n.getDate() + "–" + r.getDate() + " " + r.toLocaleDateString("nl-BE", {
-                            month: "long",
-                            year: "numeric"
-                        });
-                        return i + " – " + o;
-                    }(e.start, e.end) + (e.note ? "<br>" + L(e.note) : "") + "</div>" + (t ? '<button class="entry-remove" type="button" data-remove-entry="' + e.id + '">Verwijderen</button>' : "") + "</div>";
-                }).join("") : '<div class="empty">Nog geen registraties in deze maand.</div>';
-
-                c.innerHTML = '<div class="person-top"><div class="person-name"><span class="person-dot" style="background:' + n[t] + '"></span>' + t + '</div><div class="person-counts"><span class="count-chip"><strong>' + s + '</strong> vakantie</span><span class="count-chip"><strong>' + l + '</strong> thuis</span></div></div><div class="month-entry-list">' + d + "</div>";
-                c.querySelectorAll("[data-remove-entry]").forEach(function(e) {
-                    e.addEventListener("click", function() {
-                        m(e.getAttribute("data-remove-entry"));
-                    });
-                });
-                i.summaryStrip.appendChild(c);
-            });
-        }();
 
         !function() {
             var e = h(a.currentMonth),
@@ -301,17 +240,20 @@
         o();
 
         try {
-            var n = await M(e, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    action: "delete",
-                    id: t
-                })
-            });
-            a.entries = Array.isArray(n.entries) ? n.entries : a.entries;
+            var n = a.entries.filter(function(e) {
+                    return e.id !== t;
+                }),
+                r = await M(e, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        action: "replace",
+                        entries: n
+                    })
+                });
+            a.entries = Array.isArray(r.entries) ? r.entries : n;
             a.lastSyncedAt = new Date();
             a.syncPausedUntil = Date.now() + 2e4;
             a.error = "";
@@ -446,6 +388,29 @@
         return String(e).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
+    function P() {
+        return window.crypto && "function" == typeof window.crypto.randomUUID ? window.crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
+    }
+
+    function T(e) {
+        var n = [],
+            r = new Set;
+        return e.forEach(function(e) {
+            var a;
+            e && e.id && (a = [e.person, e.type, e.start, e.end, e.note || ""].join("|"), !r.has(a)) && (r.add(a), n.push({
+                id: e.id,
+                person: e.person,
+                type: e.type,
+                start: e.start,
+                end: e.end,
+                note: e.note || "",
+                createdAt: e.createdAt || (new Date).toISOString()
+            }));
+        }), n.sort(function(e, n) {
+            return e.start !== n.start ? e.start.localeCompare(n.start) : e.person !== n.person ? t.indexOf(e.person) - t.indexOf(n.person) : (e.createdAt || "").localeCompare(n.createdAt || "");
+        });
+    }
+
     document.querySelectorAll(".segment").forEach(function(e) {
         e.addEventListener("click", function() {
             a.selectedType = e.getAttribute("data-type");
@@ -466,24 +431,28 @@
             var t = (i.note.value || "").trim(),
                 n = a.selectedDates.map(function(e) {
                     return {
+                        id: P(),
                         person: a.currentUser,
                         type: a.selectedType,
                         start: e,
                         end: e,
-                        note: t
+                        note: t,
+                        createdAt: (new Date).toISOString()
                     };
                 }),
-                r = await M(e, {
+                r = T(a.entries.concat(n)),
+                s = await M(e, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        entries: n
+                        action: "replace",
+                        entries: r
                     })
                 });
 
-            a.entries = Array.isArray(r.entries) ? r.entries : a.entries;
+            a.entries = Array.isArray(s.entries) ? s.entries : r;
             a.lastSyncedAt = new Date();
             a.syncPausedUntil = Date.now() + 2e4;
             a.error = "";

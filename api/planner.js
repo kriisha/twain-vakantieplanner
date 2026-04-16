@@ -73,6 +73,11 @@ function parseBody(req) {
 }
 
 async function handlePost(body) {
+  if (body && body.action === 'replace') {
+    const nextEntries = Array.isArray(body.entries) ? body.entries.map(normalizeStoredEntry) : [];
+    return writePlanner(nextEntries);
+  }
+
   if (body && body.action === 'delete') {
     const id = typeof body.id === 'string' ? body.id.trim() : '';
     if (!id) {
@@ -170,6 +175,10 @@ async function updatePlanner(mutator) {
   const snapshot = await readPlanner();
   const nextEntries = sortEntries(mutator(snapshot.entries.slice())).filter(isValidStoredEntry);
 
+  return writePlanner(nextEntries);
+}
+
+async function writePlanner(nextEntries) {
   await put(DATA_PATH, JSON.stringify(nextEntries, null, 2), {
     access: 'private',
     allowOverwrite: true,
@@ -179,6 +188,24 @@ async function updatePlanner(mutator) {
   });
 
   return nextEntries;
+}
+
+function normalizeStoredEntry(payload) {
+  const entry = validateEntry(payload);
+  const id = typeof payload.id === 'string' && payload.id.trim() ? payload.id.trim() : createId();
+  const createdAt = typeof payload.createdAt === 'string' && payload.createdAt.trim()
+    ? payload.createdAt.trim()
+    : new Date().toISOString();
+
+  return {
+    id: id,
+    person: entry.person,
+    type: entry.type,
+    start: entry.start,
+    end: entry.end,
+    note: entry.note,
+    createdAt: createdAt
+  };
 }
 
 function isValidStoredEntry(entry) {
